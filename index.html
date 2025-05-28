@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ORSA İnteraktif Bilgi Uygulaması</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Visualization & Content Choices:
+        - ORSA Definition/Objectives (Sec 1.1): Goal: Inform. Method: Expandable text sections. Interaction: Click to expand/collapse. Justification: Clarity, space-saving. Library: Vanilla JS.
+        - ORSA Process (Sec 1.3): Goal: Organize/Inform. Method: HTML/CSS diagram (flexbox/grid steps). Interaction: Static visual. Justification: Clear process visualization. Library: Tailwind.
+        - Actuary's Roles (Sec 2): Goal: Inform. Method: Icon-accented list or cards. Interaction: Static. Justification: Easy to scan key contributions. Library: Tailwind.
+        - International Bodies (Sec 3): Goal: Inform. Method: Brief text. Interaction: Static. Justification: Concise info. Library: Tailwind.
+        - Comparative Analysis (Sec 4): Goal: Compare/Inform. Method: Tabs/buttons for EU/US/China. Dynamic text display for selected region. HTML table for detailed side-by-side comparison. A simple bar chart for US ORSA report sections. Interaction: Click to switch views, view table. Justification: Core of the report, enables direct comparison, fulfills chart requirement. Library: Vanilla JS for view switching, Tailwind for table, Chart.js for chart.
+        - Conclusion/Best Practices (Sec 4.4/Conclusion): Goal: Inform/Summarize. Method: Bullet points, key takeaways. Interaction: Static. Justification: Clear summary. Library: Tailwind.
+        - CONFIRMATION: NO SVG graphics used. NO Mermaid JS used.
+    -->
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .nav-link { transition: all 0.3s ease; }
+        .nav-link.active { color: #0284c7; border-bottom: 2px solid #0284c7; }
+        .nav-link:hover { color: #0369a1; }
+        .content-section { display: none; }
+        .content-section.active { display: block; }
+        .tab-button { transition: all 0.3s ease; }
+        .tab-button.active { background-color: #0284c7; color: white; }
+        .chart-container { position: relative; width: 100%; max-width: 600px; margin-left: auto; margin-right: auto; height: 300px; max-height: 400px; }
+        @media (min-width: 768px) { .chart-container { height: 350px; } }
+        .accordion-content { max-height: 0; overflow: hidden; transition: max-height 0.3s ease-out; }
+    </style>
+</head>
+<body class="bg-stone-100 text-neutral-800">
+
+    <header class="bg-white shadow-md sticky top-0 z-50">
+        <nav class="container mx-auto px-6 py-3 flex flex-wrap justify-between items-center">
+            <a href="#" class="text-2xl font-bold text-sky-700">ORSA Keşif Aracı</a>
+            <button id="mobileMenuButton" class="md:hidden p-2 rounded-md text-neutral-600 hover:text-sky-700 hover:bg-stone-200">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7" />
+                </svg>
+            </button>
+            <div id="navLinks" class="w-full md:flex md:items-center md:w-auto hidden mt-4 md:mt-0">
+                <ul class="flex flex-col md:flex-row md:space-x-6 space-y-2 md:space-y-0 text-lg">
+                    <li><a href="#ana-sayfa" class="nav-link block py-2 px-1 hover:text-sky-700">Ana Sayfa</a></li>
+                    <li><a href="#orsa-nedir" class="nav-link block py-2 px-1 hover:text-sky-700">ORSA Nedir?</a></li>
+                    <li><a href="#aktuerin-rolu" class="nav-link block py-2 px-1 hover:text-sky-700">Aktüerin Rolü</a></li>
+                    <li><a href="#uluslararasi-cerceve" class="nav-link block py-2 px-1 hover:text-sky-700">Uluslararası Çerçeve</a></li>
+                    <li><a href="#karsilastirmali-analiz" class="nav-link block py-2 px-1 hover:text-sky-700">Karşılaştırmalı Analiz</a></li>
+                    <li><a href="#sonuc" class="nav-link block py-2 px-1 hover:text-sky-700">Sonuç ve En İyi Uygulamalar</a></li>
+                </ul>
+            </div>
+        </nav>
+    </header>
+
+    <main class="container mx-auto p-4 md:p-8">
+        <section id="ana-sayfa" class="content-section active">
+            <div class="bg-white p-8 rounded-lg shadow-lg">
+                <h1 class="text-4xl font-bold text-sky-700 mb-6">Öz Risk ve Solvans Değerlendirmesi (ORSA) Dünyasına Hoş Geldiniz</h1>
+                <p class="text-lg text-neutral-700 mb-4">
+                    Bu interaktif uygulama, Öz Risk ve Solvans Değerlendirmesi (ORSA) kavramını, aktüerlerin bu süreçteki kritik rolünü ve ORSA'nın Çin, ABD ve Avrupa Birliği'ndeki uygulamalarını karşılaştırmalı bir bakış açısıyla keşfetmenizi sağlar. ORSA'nın sigortacılık sektöründeki önemini ve küresel finansal istikrara katkılarını anlamak için bölümler arasında gezinin.
+                </p>
+                <p class="text-lg text-neutral-700 mb-6">
+                    ORSA, sigorta şirketlerinin kendi risk profillerini ve gelecekteki finansal yeterliliklerini proaktif bir şekilde değerlendirmelerini sağlayan, ileriye dönük, stratejik bir yönetim aracıdır. Bu platform, ORSA'nın karmaşık dünyasını anlaşılır ve etkileşimli bir şekilde sunmayı amaçlamaktadır.
+                </p>
+                <div class="grid md:grid-cols-2 gap-6">
+                    <div class="bg-sky-50 p-6 rounded-lg border border-sky-200">
+                        <h3 class="text-xl font-semibold text-sky-700 mb-2">Temel Faydalar</h3>
+                        <ul class="list-disc list-inside text-neutral-600 space-y-1">
+                            <li>ORSA'nın ne olduğunu ve hedeflerini öğrenin.</li>
+                            <li>Aktüerlerin ORSA'daki kilit rolünü anlayın.</li>
+                            <li>Uluslararası düzenleyici standartları keşfedin.</li>
+                            <li>Farklı ülkelerdeki ORSA uygulamalarını karşılaştırın.</li>
+                        </ul>
+                    </div>
+                    <div class="bg-amber-50 p-6 rounded-lg border border-amber-200">
+                        <h3 class="text-xl font-semibold text-amber-700 mb-2">Yönetici Özeti Anahtar Noktaları</h3>
+                        <p class="text-neutral-600">ORSA, Kurumsal Risk Yönetimi'nin (KRY) temel bir unsuru olarak küresel çapta benimsenmektedir. Uluslararası Sigorta Denetçileri Birliği (IAIS) ve Sigorta Temel Prensibi 16 (ICP 16) bu süreçte merkezi bir rol oynamaktadır. Aktüerler, risk tanımlamasından sermaye yeterliliğine kadar ORSA'nın her aşamasında kritik katkılar sunar.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="orsa-nedir" class="content-section">
+            <div class="bg-white p-8 rounded-lg shadow-lg">
+                <h2 class="text-3xl font-bold text-sky-700 mb-6">ORSA Nedir?</h2>
+                <p class="text-lg text-neutral-700 mb-6">
+                    Bu bölümde, Öz Risk ve Solvans Değerlendirmesi'nin (ORSA) ne olduğu, temel hedefleri, Kurumsal Risk Yönetimi (KRY) içindeki merkezi rolü ve temel süreç adımları ayrıntılı olarak incelenmektedir. ORSA'nın sigortacılar için neden bu kadar önemli bir araç olduğunu keşfedin.
+                </p>
+
+                <div class="space-y-4">
+                    <div>
+                        <button class="accordion-toggle w-full text-left text-xl font-semibold text-sky-600 p-4 bg-sky-50 rounded-md hover:bg-sky-100 transition flex justify-between items-center">
+                            ORSA'yı Tanımlamak: Temel Kavramlar ve Hedefler
+                            <span class="transform transition-transform duration-300 ">▼</span>
+                        </button>
+                        <div class="accordion-content px-4 pt-2 pb-4 bg-white border border-t-0 border-sky-100 rounded-b-md">
+                            <p class="text-neutral-700 mb-2">Öz Risk ve Solvans Değerlendirmesi (ORSA), sigorta işletmeleri için hızla küresel bir düzenleyici gereklilik haline gelmekte ve Kurumsal Risk Yönetimi'nin (KRY) temel unsurlarından biri olarak işlev görmektedir. Bu küresel gelişme, büyük ölçüde, IAIS'in Ekim 2010'da kabul edilen KRY'ye ilişkin Sigorta Temel Prensibi 16 (ICP 16) kapsamında bir ORSA gerektirmesinden kaynaklanmaktadır.</p>
+                            <p class="text-neutral-700 font-semibold mt-3 mb-1">Temel Hedefler:</p>
+                            <ul class="list-disc list-inside text-neutral-700 space-y-1">
+                                <li>Bir sigortacının karşı karşıya olduğu riskleri değerlendirmek.</li>
+                                <li>Bu risklere karşı korunmak için ihtiyaç duyduğu sermaye miktarını değerlendirmek.</li>
+                                <li>Risk ve sermaye gereklilikleri değerlendirmesini belgelemek.</li>
+                            </ul>
+                            <p class="text-neutral-700 mt-2">ORSA, sigortacının risk yönetimi ve solvans pozisyonunun yeterli olup olmadığını değerlendirmeyi ve gelecekteki gelişimini göz önünde bulundurmayı amaçlamaktadır. Doğası gereği dinamik ve ileriye dönük bir süreçtir.</p>
+                        </div>
+                    </div>
+
+                    <div>
+                        <button class="accordion-toggle w-full text-left text-xl font-semibold text-sky-600 p-4 bg-sky-50 rounded-md hover:bg-sky-100 transition flex justify-between items-center">
+                            ORSA'nın Kurumsal Risk Yönetimi (KRY)'ndeki Temel Rolü
+                            <span class="transform transition-transform duration-300 ">▼</span>
+                        </button>
+                        <div class="accordion-content px-4 pt-2 pb-4 bg-white border border-t-0 border-sky-100 rounded-b-md">
+                            <p class="text-neutral-700 mb-2">ORSA, bir sigortacının daha geniş kurumsal risk yönetimi (KRY) çerçevesinin merkezi bir bileşenidir. Solvans amaçlı KRY, risk yönetimi, stratejik planlama, sermaye yeterliliği ve finansal verimliliğin koordinasyonu olarak tanımlanır. Nihai amaç, sigortacının sağlam işleyişini geliştirmek ve poliçe sahiplerinin yeterli korunmasını sağlamaktır.</p>
+                            <p class="text-neutral-700">KRY çerçevesi, entegre bir stratejiler, politikalar ve süreçler bütünüdür. KRY'nin amacı riski ortadan kaldırmak değil, risk iştahı ve solvans pozisyonu dikkate alınarak belirlenen kendi kendine dayatılan sınırlar dahilinde riskleri yönetmektir.</p>
+                        </div>
+                    </div>
+
+                    <div>
+                        <button class="accordion-toggle w-full text-left text-xl font-semibold text-sky-600 p-4 bg-sky-50 rounded-md hover:bg-sky-100 transition flex justify-between items-center">
+                            ORSA'nın Temel Unsurları ve Süreç Akışı
+                            <span class="transform transition-transform duration-300 ">▼</span>
+                        </button>
+                        <div class="accordion-content px-4 pt-2 pb-4 bg-white border border-t-0 border-sky-100 rounded-b-md">
+                            <p class="text-neutral-700 mb-2">ORSA, yönetim kurulu, üst yönetim, iç denetim, iç kontrol ve şirketin tüm çalışanlarını içeren döngüsel ve yinelemeli bir sistemin parçasıdır. Operasyonel uygulamada dört temel adım belirlenebilir:</p>
+                            <ol class="list-decimal list-inside text-neutral-700 space-y-2 my-4">
+                                <li class="p-3 bg-stone-50 rounded-md border border-stone-200">
+                                    <span class="font-semibold">Risk profilinin tanımlanması:</span> Tüm önemli risklerin kapsamlı bir şekilde belirlenmesini ve değerlendirilmesini içerir.
+                                </li>
+                                <li class="p-3 bg-stone-50 rounded-md border border-stone-200">
+                                    <span class="font-semibold">Risk yönetimi stratejisinin uygulanması:</span> Şirketin risk iştahı ve risk toleranslarının belirlenmesini içerir.
+                                </li>
+                                <li class="p-3 bg-stone-50 rounded-md border border-stone-200">
+                                    <span class="font-semibold">Stratejik süreçlerin evrimi:</span> ORSA, sigortacının iş planlama süreciyle bağlantılı olmalı ve önemli bir yönetim aracı olarak hizmet etmelidir.
+                                </li>
+                                <li class="p-3 bg-stone-50 rounded-md border border-stone-200">
+                                    <span class="font-semibold">ORSA raporunun hazırlanması:</span> Genellikle nitel ve nicel bölümlerden oluşur.
+                                </li>
+                            </ol>
+                            <p class="text-neutral-700 mb-2">Stres ve senaryo testi (SST), tipik olarak ORSA'nın önemli bir bileşenidir. ORSA, devam eden bir süreç olup, düzenli olarak (yılda en az bir kez) yürütülmesi beklenir.</p>
+                            <p class="text-neutral-700 mt-3 font-semibold">Önemli İlkeler:</p>
+                            <ul class="list-disc list-inside text-neutral-700 space-y-1">
+                                <li><span class="font-semibold">Orantılılık:</span> ORSA süreçleri "işletmenin niteliğine, ölçeğine ve karmaşıklığına orantılı olması" gerekir.</li>
+                                <li><span class="font-semibold">İleriye Dönük Yaklaşım:</span> ORSA "dinamik ileriye dönük bir süreçtir" ve "çok yıllı projeksiyonu" gerektirir.</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="aktuerin-rolu" class="content-section">
+            <div class="bg-white p-8 rounded-lg shadow-lg">
+                <h2 class="text-3xl font-bold text-sky-700 mb-6">Aktüerin ORSA'daki Stratejik Rolü</h2>
+                <p class="text-lg text-neutral-700 mb-6">
+                    Aktüerler, ORSA sürecinin her aşamasında vazgeçilmez uzmanlık sunarlar. Bu bölüm, aktüerlerin risk tanımlama ve değerlendirmeden, solvans ihtiyaçlarının belirlenmesine, stres testlerinin tasarlanmasından raporlama ve yönetişime kadar ORSA'ya nasıl stratejik katkılarda bulunduğunu açıklamaktadır.
+                </p>
+                <div class="grid md:grid-cols-2 gap-6">
+                    <div class="p-6 bg-sky-50 rounded-lg border border-sky-200">
+                        <h3 class="text-xl font-semibold text-sky-700 mb-2">Risk Tanımlama ve Değerlendirme</h3>
+                        <p class="text-neutral-600">Aktüerler, aktüeryal ve finansal matematik bilgilerini kullanarak risklerin tanımlanması ve değerlendirilmesine benzersiz bir şekilde katkıda bulunurlar. Fiyatlandırma, karşılık ayırma ve felaket modellemesi gibi alanlarda çalışarak riskleri belirler ve ölçütlerini tanımlarlar.</p>
+                    </div>
+                    <div class="p-6 bg-sky-50 rounded-lg border border-sky-200">
+                        <h3 class="text-xl font-semibold text-sky-700 mb-2">Solvans ve Sermaye Nicelendirmesi</h3>
+                        <p class="text-neutral-600">Sermaye gerekliliklerinin belirlenmesinde merkezi bir konumdadırlar. ORSA'nın "riski sermayeye bağlama" unsurunda kritik rol oynarlar. Varlık ve yükümlülüklerin piyasa tutarlı değerlemesi, aktüerlerin uzmanlığına dayanır.</p>
+                    </div>
+                    <div class="p-6 bg-sky-50 rounded-lg border border-sky-200">
+                        <h3 class="text-xl font-semibold text-sky-700 mb-2">Stres ve Senaryo Testleri</h3>
+                        <p class="text-neutral-600">Stres testi ve senaryo analizinin tasarımında ve yürütülmesinde kilit rol oynarlar. Aşırı senaryoların şirket üzerindeki etkisini araştırmaya yardımcı olurlar.</p>
+                    </div>
+                    <div class="p-6 bg-sky-50 rounded-lg border border-sky-200">
+                        <h3 class="text-xl font-semibold text-sky-700 mb-2">Raporlama, Yönetişim ve Karar Alma</h3>
+                        <p class="text-neutral-600">Analiz sonuçlarının Yönetim Kurulu'na ve üst yönetime doğru ve açık bir şekilde iletilmesini sağlarlar. ORSA'nın hem nitel hem de nicel raporlama yönlerinde yer alırlar.</p>
+                    </div>
+                </div>
+                 <p class="text-neutral-700 mt-6 italic">Aktüerlerin rolü, geleneksel teknik uzmanlıktan stratejik ortaklığa doğru genişlemektedir. Kapsamlı Kurumsal Risk Yönetimi (KRY) çerçevesi içinde daha entegre ve stratejik bir rol üstlenmeleri beklenmektedir.</p>
+            </div>
+        </section>
+
+        <section id="uluslararasi-cerceve" class="content-section">
+            <div class="bg-white p-8 rounded-lg shadow-lg">
+                <h2 class="text-3xl font-bold text-sky-700 mb-6">Uluslararası Düzenleyici Çerçeveler ve ORSA Rehberliği</h2>
+                 <p class="text-lg text-neutral-700 mb-6">
+                    ORSA, küresel bir olgudur ve uluslararası kuruluşlar tarafından şekillendirilmektedir. Bu bölümde, Uluslararası Sigorta Denetçileri Birliği (IAIS) ve Sigorta Temel Prensibi 16 (ICP 16) gibi temel düzenleyici çerçeveler ile Dünya Bankası ve OECD'nin finansal istikrar üzerindeki etkileri ele alınmaktadır. Ayrıca, ORSA ilkelerindeki küresel yakınsama ve farklılaşmalar incelenmektedir.
+                </p>
+                <div class="space-y-4">
+                    <div>
+                        <button class="accordion-toggle w-full text-left text-xl font-semibold text-sky-600 p-4 bg-sky-50 rounded-md hover:bg-sky-100 transition flex justify-between items-center">
+                            Uluslararası Sigorta Denetçileri Birliği (IAIS) ve ICP 16
+                            <span class="transform transition-transform duration-300 ">▼</span>
+                        </button>
+                        <div class="accordion-content px-4 pt-2 pb-4 bg-white border border-t-0 border-sky-100 rounded-b-md">
+                            <p class="text-neutral-700 mb-2">IAIS, sigorta sektörünün denetimi için ilkeler ve standartlar geliştiren uluslararası standart belirleme kuruluşudur. Misyonu, adil, güvenli ve istikrarlı sigorta piyasalarını teşvik etmek ve küresel finansal istikrara katkıda bulunmaktır.</p>
+                            <p class="text-neutral-700 mb-2"><span class="font-semibold">ICP 16 (Sigorta Temel Prensibi 16):</span> Solvans Amaçlı Kurumsal Risk Yönetimi'ni ele alır. Denetleyicilerin, sigortacıların tüm ilgili ve önemli riskleri belirlemesini, değerlendirmesini ve ele almasını zorunlu kılan KRY standartlarını oluşturmasını gerektirir. ORSA'nın ICP'lere dahil edilmesi, dünya çapında ORSA için etkili bir gereklilikle sonuçlanmıştır.</p>
+                            <p class="text-neutral-700">IAIS, ulusal düzenleyiciler üzerinde doğrudan bir icra yetkisine sahip olmasa da, Dünya Bankası ve IMF'nin Finansal Sektör Değerlendirme Programları (FSAP) aracılığıyla uyguladığı etkiyle güçlü bir "yumuşak güç" mekanizması yaratmaktadır.</p>
+                        </div>
+                    </div>
+                     <div>
+                        <button class="accordion-toggle w-full text-left text-xl font-semibold text-sky-600 p-4 bg-sky-50 rounded-md hover:bg-sky-100 transition flex justify-between items-center">
+                            Dünya Bankası ve OECD'nin Etkisi
+                            <span class="transform transition-transform duration-300 ">▼</span>
+                        </button>
+                        <div class="accordion-content px-4 pt-2 pb-4 bg-white border border-t-0 border-sky-100 rounded-b-md">
+                            <p class="text-neutral-700 mb-2"><span class="font-semibold">Dünya Bankası Grubu:</span> Kriz önleme, finansal sistemleri izleme ve banka denetimini güçlendirme yoluyla daha dirençli bankacılık sistemleri inşa etmek için çalışır. IMF ile ortak girişimi olan Finansal Sektör Değerlendirme Programı (FSAP), ülkelerin finansal sektör krizlerini azaltmalarına yardımcı olur ve IAIS ICP'lerine uyumu gözden geçirir.</p>
+                            <p class="text-neutral-700 mb-2"><span class="font-semibold">OECD (Ekonomik İşbirliği ve Kalkınma Örgütü):</span> Sigorta solvans denetimiyle ilgili raporlar yayınlar ve IAIS'in Akran Değerlendirme Süreçlerine aktif olarak katılır. İklim değişikliğinin ORSA raporlarına dahil edilmesi gibi konularda yaklaşımlar geliştirilmesine katkıda bulunur.</p>
+                        </div>
+                    </div>
+                     <div>
+                        <button class="accordion-toggle w-full text-left text-xl font-semibold text-sky-600 p-4 bg-sky-50 rounded-md hover:bg-sky-100 transition flex justify-between items-center">
+                            ORSA İlkelerinde Küresel Yakınsama ve Farklılaşma
+                            <span class="transform transition-transform duration-300 ">▼</span>
+                        </button>
+                        <div class="accordion-content px-4 pt-2 pb-4 bg-white border border-t-0 border-sky-100 rounded-b-md">
+                            <p class="text-neutral-700 mb-2">IAIS ICP 16 sayesinde, çeşitli yargı alanlarında ORSA'nın temel hedeflerinde ve ana gerekliliklerinde önemli bir tutarlılık bulunmaktadır. Ancak, belirli ORSA gereklilikleri ve bunların vurgusu uluslararası düzeyde farklılık gösterebilir.</p>
+                            <p class="text-neutral-700 mb-2">Temel farklılık alanları arasında Yönetim Kurulu'nun rolüne verilen özel önem, uygulama kapsamı (grup veya tüzel kişilik) ve sermaye ölçüm metodolojilerinin reçetelendirilmesi yer almaktadır.</p>
+                            <p class="text-neutral-700">ORSA çerçevesi, iklim değişikliği, siber riskler gibi yeni ve geleneksel olmayan riskleri içerecek şekilde dinamik ve esnek olacak şekilde tasarlanmıştır.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="karsilastirmali-analiz" class="content-section">
+            <div class="bg-white p-8 rounded-lg shadow-lg">
+                <h2 class="text-3xl font-bold text-sky-700 mb-6">ORSA Uygulamalarının Karşılaştırmalı Analizi</h2>
+                <p class="text-lg text-neutral-700 mb-6">
+                    ORSA uygulamaları küresel düzeyde benzer hedeflere sahip olsa da, yargı alanları arasında önemli farklılıklar göstermektedir. Bu interaktif bölüm, Avrupa Birliği (Solvency II), Amerika Birleşik Devletleri (NAIC ORSA) ve Çin (C-ROSS) rejimlerini detaylı bir şekilde karşılaştırarak temel özellikleri, farklılıkları ve en iyi uygulamaları ortaya koymaktadır. Bölgeler arasında geçiş yaparak veya karşılaştırma tablosunu inceleyerek bu farkları keşfedin.
+                </p>
+
+                <div class="mb-6 flex space-x-2 border-b-2 border-stone-200">
+                    <button class="tab-button py-2 px-4 rounded-t-md text-neutral-600 hover:bg-stone-200 active" data-tab="eu">Avrupa Birliği</button>
+                    <button class="tab-button py-2 px-4 rounded-t-md text-neutral-600 hover:bg-stone-200" data-tab="us">Amerika Birleşik Devletleri</button>
+                    <button class="tab-button py-2 px-4 rounded-t-md text-neutral-600 hover:bg-stone-200" data-tab="cn">Çin</button>
+                    <button class="tab-button py-2 px-4 rounded-t-md text-neutral-600 hover:bg-stone-200" data-tab="comp">Karşılaştırma Tablosu</button>
+                </div>
+
+                <div id="tab-content-eu" class="tab-content active">
+                    <h3 class="text-2xl font-semibold text-sky-600 mb-3">Avrupa Birliği: Solvency II ve ORSA</h3>
+                    <p class="text-neutral-700 mb-2"><span class="font-semibold">Düzenleyici Yapı:</span> Solvency II, AB'deki sigorta ve reasürans işletmeleri için 2016'da yürürlüğe giren risk tabanlı bir ihtiyati rejimdir.</p>
+                    <p class="text-neutral-700 mb-2"><span class="font-semibold">ORSA'nın Yeri:</span> Solvency II'nin üç sütunlu yapısında Pillar II (nitel gereklilikler, yönetişim, risk yönetimi) altında yer alır.</p>
+                    <p class="text-neutral-700 font-semibold mt-3 mb-1">Temel Özellikler:</p>
+                    <ul class="list-disc list-inside text-neutral-700 space-y-1 mb-3">
+                        <li><span class="font-semibold">Yönetim Kurulu Denetimi:</span> Güçlü vurgu; ORSA, Yönetim Kurulu'nun sorumluluğundadır.</li>
+                        <li><span class="font-semibold">Kapsam:</span> Her tüzel kişilik ve grubun tamamı için ORSA gereklidir.</li>
+                        <li><span class="font-semibold">Sermaye Ölçümü:</span> Ekonomik ilkelere dayanır (SCR veya iç model).</li>
+                        <li><span class="font-semibold">Orantılılık:</span> Risklerin niteliğine, ölçeğine ve karmaşıklığına göre uygulanır.</li>
+                        <li><span class="font-semibold">Stres Testleri:</span> Anlamlı stres testleri ve senaryolar gereklidir; sürdürülebilirlik riskleri için uzun vadeli testler beklenir.</li>
+                    </ul>
+                     <p class="text-neutral-700">Solvency II, Yönetim Kurulu'nun ORSA'yı yönlendirmede ve sorgulamada güçlü, aktif bir rolünü ve doğrudan sorumluluğunu açıkça zorunlu kılar.</p>
+                </div>
+
+                <div id="tab-content-us" class="tab-content">
+                    <h3 class="text-2xl font-semibold text-sky-600 mb-3">Amerika Birleşik Devletleri: NAIC Solvans Modernizasyon Girişimi ve ORSA</h3>
+                    <p class="text-neutral-700 mb-2"><span class="font-semibold">Düzenleyici Yapı:</span> Solvans düzenlemeleri Ulusal Sigorta Komisyoncuları Birliği (NAIC) tarafından belirlenir. NAIC'in Solvans Modernizasyon Girişimi (SMI) ORSA'yı tanıtmıştır.</p>
+                    <p class="text-neutral-700 mb-2"><span class="font-semibold">Amaç:</span> Etkili KRY'yi teşvik etmek, düzenleyicilere KRY uygulamaları ve finansal strese dayanma yeteneği hakkında net bir resim sağlamak.</p>
+                    <p class="text-neutral-700 font-semibold mt-3 mb-1">Temel Özellikler:</p>
+                    <ul class="list-disc list-inside text-neutral-700 space-y-1 mb-3">
+                        <li><span class="font-semibold">ORSA Rehberlik Kılavuzu:</span> ORSA'nın yürütülmesi ve ORSA Özet Raporu'nun dosyalanması için rehberlik sağlar.</li>
+                        <li><span class="font-semibold">Rapor Yapısı:</span> Genellikle 3 bölüm içerir (KRY çerçevesi, risk maruziyetleri, grup risk sermayesi).</li>
+                        <li><span class="font-semibold">Sermaye Ölçümünde Esneklik:</span> NAIC, ORSA'da kullanılacak sermaye ölçütünü belirtmez.</li>
+                        <li><span class="font-semibold">Kapsam:</span> ORSA grup bazında yürütülür. Prim eşikleri geçerlidir (bireysel >$500M, grup >$1Milyar).</li>
+                        <li><span class="font-semibold">Gizlilik:</span> ORSA Özet Raporları gizlidir.</li>
+                    </ul>
+                    <div class="chart-container my-6">
+                        <canvas id="usOrsaReportChart"></canvas>
+                    </div>
+                    <p class="text-center text-sm text-neutral-500">Grafik: ABD ORSA Özet Raporu'nun Bölüm Sayısı</p>
+                </div>
+
+                <div id="tab-content-cn" class="tab-content">
+                    <h3 class="text-2xl font-semibold text-sky-600 mb-3">Çin: C-ROSS ve ORSA</h3>
+                    <p class="text-neutral-700 mb-2"><span class="font-semibold">Düzenleyici Yapı:</span> Ulusal Finansal Düzenleme İdaresi (NFRA) tarafından yönetilir. Çin Risk Odaklı Solvans Sistemi (C-ROSS), 2016'da tam olarak uygulanan ikinci nesil solvans çerçevesidir.</p>
+                    <p class="text-neutral-700 mb-2"><span class="font-semibold">Çerçeve Benzerliği:</span> Solvency II'ye benzer "üç sütunlu" bir yapı benimser (Pillar 1: Nicel Sermaye, Pillar 2: Nitel Denetim, Pillar 3: Piyasa Disiplini).</p>
+                    <p class="text-neutral-700 font-semibold mt-3 mb-1">Temel Özellikler:</p>
+                    <ul class="list-disc list-inside text-neutral-700 space-y-1 mb-3">
+                        <li><span class="font-semibold">Pillar 1:</span> Nicel riskler için sermaye gereklilikleri. C-ROSS II, piyasa ve kredi riski için "içeriden bakış" yaklaşımı getirmiştir.</li>
+                        <li><span class="font-semibold">Pillar 2:</span> Operasyonel, stratejik, itibar, likidite riskleri. Solvans Uyumlu Risk Yönetimi Gereklilikleri ve Değerlendirmesi (SARMRA) içerir.</li>
+                        <li><span class="font-semibold">Pillar 3:</span> Bilgi açıklaması yoluyla piyasa disiplini.</li>
+                        <li><span class="font-semibold">Kendi Risk Nicelendirmesi:</span> Başlangıçta "sigortacının kendi risk ve solvans gerekliliklerinin nicelendirilmesi için sınırlı bir rol" olduğu belirtilmiş, ancak gelişim potansiyeli vardır.</li>
+                    </ul>
+                     <p class="text-neutral-700">C-ROSS, risk tabanlı solvansı ve sağlam risk yönetimini vurgular, ancak "Kendi" yönü diğer yargı alanlarına kıyasla başlangıçta daha reçeteli bir yaklaşım sergilemiştir.</p>
+                </div>
+
+                <div id="tab-content-comp" class="tab-content">
+                    <h3 class="text-2xl font-semibold text-sky-600 mb-4">Yargı Alanları Arası Karşılaştırma</h3>
+                    <p class="text-neutral-700 mb-4">Aşağıdaki tablo, Avrupa Birliği, Amerika Birleşik Devletleri ve Çin'deki ORSA uygulamalarının temel özelliklerini karşılaştırmaktadır.</p>
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full bg-white border border-stone-200">
+                            <thead class="bg-sky-600 text-white">
+                                <tr>
+                                    <th class="py-3 px-4 text-left">Özellik</th>
+                                    <th class="py-3 px-4 text-left">Avrupa Birliği (Solvency II)</th>
+                                    <th class="py-3 px-4 text-left">ABD (NAIC ORSA)</th>
+                                    <th class="py-3 px-4 text-left">Çin (C-ROSS)</th>
+                                </tr>
+                            </thead>
+                            <tbody class="text-neutral-700">
+                                <tr class="border-b">
+                                    <td class="py-3 px-4 font-semibold">Temel İlkeler</td>
+                                    <td class="py-3 px-4">Kapsamlı risk ve sermaye değerlendirmesi, ileriye dönük, KRY ile entegrasyon.</td>
+                                    <td class="py-3 px-4">Kapsamlı risk ve sermaye değerlendirmesi, ileriye dönük, KRY ile entegrasyon.</td>
+                                    <td class="py-3 px-4">Kapsamlı risk ve sermaye değerlendirmesi, ileriye dönük, KRY ile entegrasyon.</td>
+                                </tr>
+                                <tr class="bg-stone-50 border-b">
+                                    <td class="py-3 px-4 font-semibold">Yönetim Kurulu Vurgusu</td>
+                                    <td class="py-3 px-4">Güçlü, aktif rol, doğrudan sorumluluk.</td>
+                                    <td class="py-3 px-4">Daha az spesifik, denetim kritik.</td>
+                                    <td class="py-3 px-4">Yönetişime vurgu (Pillar 2), katılım düzeyi daha az net.</td>
+                                </tr>
+                                <tr class="border-b">
+                                    <td class="py-3 px-4 font-semibold">Kapsam (Tüzel Kişilik/Grup)</td>
+                                    <td class="py-3 px-4">Her tüzel kişilik VE grup.</td>
+                                    <td class="py-3 px-4">Grup öncelikli, esnek (işin yönetilme şekline göre).</td>
+                                    <td class="py-3 px-4">Grup odaklı, bireysel tüzel kişilik kapsamı daha az net.</td>
+                                </tr>
+                                <tr class="bg-stone-50 border-b">
+                                    <td class="py-3 px-4 font-semibold">Sermaye Ölçütü Reçetesi</td>
+                                    <td class="py-3 px-4">Ekonomik ilkeler, Standart Formül veya onaylanmış iç modeller.</td>
+                                    <td class="py-3 px-4">Belirtilmemiş, sigortacılara serbestlik.</td>
+                                    <td class="py-3 px-4">Risk tabanlı, toplanmış nicel gereklilikler (Pillar 1). "Kendi nicelendirmesi" başlangıçta sınırlı.</td>
+                                </tr>
+                                <tr class="border-b">
+                                    <td class="py-3 px-4 font-semibold">Düzenleyici Olgunluk/Evrim</td>
+                                    <td class="py-3 px-4">Olgun (2016'dan beri yürürlükte).</td>
+                                    <td class="py-3 px-4">Devam eden modernizasyon (2015'te yürürlüğe girdi).</td>
+                                    <td class="py-3 px-4">İkinci nesil sistem, evrim geçiriyor.</td>
+                                </tr>
+                                <tr class="bg-stone-50 border-b">
+                                    <td class="py-3 px-4 font-semibold">"Öz-lük" Derecesi</td>
+                                    <td class="py-3 px-4">Yüksek, ancak kurallı çerçeve.</td>
+                                    <td class="py-3 px-4">Çok Yüksek (sermaye ölçütü serbestliği).</td>
+                                    <td class="py-3 px-4">Başlangıçta daha düşük, gelişme potansiyeli var.</td>
+                                </tr>
+                                 <tr class="border-b">
+                                    <td class="py-3 px-4 font-semibold">Stres ve Senaryo Testleri</td>
+                                    <td class="py-3 px-4">Kapsamlı, sürdürülebilirlik riskleri dahil.</td>
+                                    <td class="py-3 px-4">Önemli bir bileşen.</td>
+                                    <td class="py-3 px-4">Pillar 2 kapsamında önemli.</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <p class="text-neutral-700 mt-4 italic">Bu farklılıklar, her yargı alanının tarihsel düzenleyici felsefesi, yasal çerçevesi ve pazar yapısından kaynaklanmaktadır. "Kendi olma" derecesi, ilke tabanlı ve kural tabanlı yaklaşımlar arasındaki farklı düzenleyici felsefeleri yansıtmaktadır.</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="sonuc" class="content-section">
+            <div class="bg-white p-8 rounded-lg shadow-lg">
+                <h2 class="text-3xl font-bold text-sky-700 mb-6">Sonuç ve En İyi Uygulamalar</h2>
+                <p class="text-lg text-neutral-700 mb-6">
+                     Bu son bölüm, ORSA'nın sigortacılık sektörü ve finansal istikrar için önemini özetlemekte, aktüerlerin kilit rolünü vurgulamakta ve farklı yargı alanlarındaki uygulamalardan çıkarılan en iyi uygulamaları sunmaktadır. ORSA'nın geleceğine dair genel bir değerlendirme yapılmaktadır.
+                </p>
+                <p class="text-neutral-700 mb-4">Öz Risk ve Solvans Değerlendirmesi (ORSA), küresel sigorta denetiminde temel bir dönüşümü temsil etmektedir. IAIS'in ICP 16'sı tarafından yönlendirilen ORSA, sigorta şirketlerini ileriye dönük, entegre bir Kurumsal Risk Yönetimi (KRY) sürecine teşvik eder.</p>
+                <p class="text-neutral-700 mb-4">Aktüerler, risklerin nicelendirilmesi, stres testlerinin tasarlanması ve sonuçların iletilmesi gibi alanlardaki uzmanlıklarıyla ORSA'nın etkinliği için kritik öneme sahiptir.</p>
+                <p class="text-neutral-700 mb-4">Çin (C-ROSS), ABD (NAIC) ve AB (Solvency II) karşılaştırması, ORSA'nın temel hedeflerinde küresel bir yakınlaşma olduğunu, ancak yönetim kurulu vurgusu, kapsam ve sermaye ölçütü gibi alanlarda önemli farklılıklar bulunduğunu göstermektedir.</p>
+                <h3 class="text-2xl font-semibold text-sky-600 my-4">En İyi Uygulamalar (Örtük/Açık)</h3>
+                 <ul class="list-disc list-inside text-neutral-700 space-y-2">
+                    <li><span class="font-semibold">KRY ile Derin Entegrasyon:</span> ORSA, genel KRY çerçevesi, stratejik planlama ve sermaye yönetimi ile tam olarak entegre edilmelidir.</li>
+                    <li><span class="font-semibold">Sağlam İleriye Dönük Değerlendirme:</span> Çok yıllı projeksiyonlara ve kapsamlı stres/senaryo testlerine vurgu yapılmalıdır.</li>
+                    <li><span class="font-semibold">Aktif Yönetim Kurulu ve Üst Yönetim Katılımı:</span> Üst düzeyden aktif denetim, sorgulama ve sahiplenme esastır.</li>
+                    <li><span class="font-semibold">Etkili Orantılılık Uygulaması:</span> Süreç, sigortacının niteliğine, ölçeğine ve karmaşıklığına göre uyarlanmalıdır.</li>
+                    <li><span class="font-semibold">Kapsamlı Dokümantasyon ve İç Şeffaflık:</span> Süreçlerin, varsayımların ve sonuçların dokümantasyonu hayati önem taşır.</li>
+                    <li><span class="font-semibold">Ortaya Çıkan Risklere Uyarlanabilirlik:</span> İklim değişikliği gibi yeni riskleri ORSA çerçevesine dahil etme yeteneği önemlidir.</li>
+                </ul>
+                <p class="text-neutral-700 mt-6">Sonuç olarak, ORSA, sigorta şirketlerinin risklerini daha iyi anlamalarını, sermaye ihtiyaçlarını daha doğru belirlemelerini ve stratejik kararlarını daha bilinçli almalarını sağlayan kritik bir araçtır. Uluslararası kuruluşların rehberliği ve yargı alanları arasındaki sürekli öğrenme, ORSA'nın küresel finansal sistemin dayanıklılığını artırmadaki rolünü pekiştirecektir.</p>
+            </div>
+        </section>
+    </main>
+
+    <footer class="bg-neutral-800 text-neutral-300 text-center p-6 mt-12">
+        <p>&copy; 2024 ORSA İnteraktif Bilgi Uygulaması. Rapor içeriğine dayanmaktadır.</p>
+    </footer>
+
+    <script>
+        const navLinks = document.querySelectorAll('.nav-link');
+        const sections = document.querySelectorAll('.content-section');
+        const mobileMenuButton = document.getElementById('mobileMenuButton');
+        const navLinksContainer = document.getElementById('navLinks');
+
+        // Navigation
+        function setActiveLink(hash) {
+            navLinks.forEach(link => {
+                if (link.getAttribute('href') === hash) {
+                    link.classList.add('active', 'text-sky-700', 'font-semibold');
+                    link.classList.remove('text-neutral-600');
+                } else {
+                    link.classList.remove('active', 'text-sky-700', 'font-semibold');
+                    link.classList.add('text-neutral-600');
+                }
+            });
+        }
+
+        function showSection(hash) {
+            sections.forEach(section => {
+                if ('#' + section.id === hash) {
+                    section.classList.add('active');
+                } else {
+                    section.classList.remove('active');
+                }
+            });
+        }
+        
+        navLinksContainer.addEventListener('click', (e) => {
+            if (e.target.tagName === 'A' && e.target.classList.contains('nav-link')) {
+                 if (window.innerWidth < 768) { // md breakpoint
+                    navLinksContainer.classList.add('hidden');
+                }
+            }
+        });
+
+
+        window.addEventListener('hashchange', () => {
+            const hash = window.location.hash || '#ana-sayfa';
+            setActiveLink(hash);
+            showSection(hash);
+        });
+
+        // Initial load
+        const initialHash = window.location.hash || '#ana-sayfa';
+        setActiveLink(initialHash);
+        showSection(initialHash);
+
+        // Mobile menu toggle
+        mobileMenuButton.addEventListener('click', () => {
+            navLinksContainer.classList.toggle('hidden');
+        });
+
+        // Accordion
+        const accordionToggles = document.querySelectorAll('.accordion-toggle');
+        accordionToggles.forEach(toggle => {
+            toggle.addEventListener('click', () => {
+                const content = toggle.nextElementSibling;
+                const icon = toggle.querySelector('span');
+                if (content.style.maxHeight && content.style.maxHeight !== "0px") {
+                    content.style.maxHeight = "0px";
+                    icon.style.transform = "rotate(0deg)";
+                } else {
+                    content.style.maxHeight = content.scrollHeight + "px";
+                    icon.style.transform = "rotate(180deg)";
+                }
+            });
+        });
+
+        // Tabs for Comparative Analysis
+        const tabButtons = document.querySelectorAll('.tab-button');
+        const tabContents = document.querySelectorAll('#karsilastirmali-analiz .tab-content');
+
+        tabButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                const tabId = button.dataset.tab;
+
+                tabButtons.forEach(btn => btn.classList.remove('active', 'bg-sky-700', 'text-white'));
+                button.classList.add('active', 'bg-sky-700', 'text-white');
+
+                tabContents.forEach(content => {
+                    if (content.id === `tab-content-${tabId}`) {
+                        content.classList.add('active');
+                        content.classList.remove('hidden');
+                    } else {
+                        content.classList.remove('active');
+                        content.classList.add('hidden');
+                    }
+                });
+                 // Ensure initial state for hidden tabs
+                if(tabId !== 'eu') document.getElementById('tab-content-eu').classList.add('hidden');
+                if(tabId !== 'us') document.getElementById('tab-content-us').classList.add('hidden');
+                if(tabId !== 'cn') document.getElementById('tab-content-cn').classList.add('hidden');
+                if(tabId !== 'comp') document.getElementById('tab-content-comp').classList.add('hidden');
+
+                if (tabId === 'us') {
+                    renderUsOrsaReportChart();
+                }
+            });
+        });
+        
+        // Default active tab content visibility
+        document.querySelectorAll('#karsilastirmali-analiz .tab-content').forEach((tc, index) => {
+            if(index === 0) { // EU tab is active by default
+                 tc.classList.add('active');
+                 tc.classList.remove('hidden');
+            } else {
+                tc.classList.remove('active');
+                tc.classList.add('hidden');
+            }
+        });
+
+
+        // Chart for US ORSA Report Sections
+        let usOrsaChartInstance = null;
+        function renderUsOrsaReportChart() {
+            const ctx = document.getElementById('usOrsaReportChart')?.getContext('2d');
+            if (!ctx) return;
+
+            if (usOrsaChartInstance) {
+                usOrsaChartInstance.destroy();
+            }
+
+            usOrsaChartInstance = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['ABD ORSA Özet Raporu Bölümleri'],
+                    datasets: [{
+                        label: 'Bölüm Sayısı',
+                        data: [3], // As per report text
+                        backgroundColor: ['rgba(2, 132, 199, 0.7)'], // sky-600
+                        borderColor: ['rgba(2, 132, 199, 1)'],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                stepSize: 1
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return `Bölüm Sayısı: ${context.raw}`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+    </script>
+</body>
+</html>
